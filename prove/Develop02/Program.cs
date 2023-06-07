@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 
 public class Entry
 {
     public string Prompt { get; set; }
     public string Response { get; set; }
     public DateTime Date { get; set; }
+    public string Mood { get; set; }
 }
 
 public class Journal
@@ -28,43 +30,51 @@ public class Journal
         var prompt = Prompts[random.Next(Prompts.Count)];
         Console.WriteLine(prompt);
         var response = Console.ReadLine();
-        Entries.Add(new Entry { Prompt = prompt, Response = response, Date = DateTime.Now });
+        Console.WriteLine("How are you feeling today?");
+        var mood = Console.ReadLine();
+        Entries.Add(new Entry { Prompt = prompt, Response = response, Date = DateTime.Now, Mood = mood });
     }
 
     public void DisplayEntries()
     {
         foreach (var entry in Entries)
         {
-            Console.WriteLine($"Date: {entry.Date}, Prompt: {entry.Prompt}, Response: {entry.Response}");
+            Console.WriteLine($"Date: {entry.Date}, Prompt: {entry.Prompt}, Response: {entry.Response}, Mood: {entry.Mood}");
         }
     }
 
     public void SaveToFile(string filename)
     {
-        using (var writer = new StreamWriter(filename))
-        {
-            foreach (var entry in Entries)
-            {
-                writer.WriteLine($"Date: {entry.Date}, Prompt: {entry.Prompt}, Response: {entry.Response}");
-            }
-        }
+        var csv = new List<string> { "Date,Prompt,Response,Mood" };
+        csv.AddRange(Entries.Select(entry => $"{entry.Date},{entry.Prompt},{entry.Response},{entry.Mood}"));
+        File.WriteAllLines(filename, csv);
     }
 
     public void LoadFromFile(string filename)
     {
         Entries.Clear();
-        using (var reader = new StreamReader(filename))
+        var lines = File.ReadAllLines(filename);
+        foreach (var line in lines.Skip(1))
         {
-            string line;
-            while ((line = reader.ReadLine()) != null)
-            {
-                var parts = line.Split(new[] { ", Prompt: ", ", Response: " }, StringSplitOptions.None);
-                var date = DateTime.Parse(parts[0].Replace("Date: ", ""));
-                var prompt = parts[1];
-                var response = parts[2];
-                Entries.Add(new Entry { Date = date, Prompt = prompt, Response = response });
-            }
+            var parts = line.Split(',');
+            var date = DateTime.Parse(parts[0]);
+            var prompt = parts[1];
+            var response = parts[2];
+            var mood = parts[3];
+            Entries.Add(new Entry { Date = date, Prompt = prompt, Response = response, Mood = mood });
         }
+    }
+
+    public void SaveToJson(string filename)
+    {
+        var json = JsonConvert.SerializeObject(Entries);
+        File.WriteAllText(filename, json);
+    }
+
+    public void LoadFromJson(string filename)
+    {
+        var json = File.ReadAllText(filename);
+        Entries = JsonConvert.DeserializeObject<List<Entry>>(json);
     }
 }
 
@@ -75,7 +85,7 @@ public class Program
         var journal = new Journal();
         while (true)
         {
-            Console.WriteLine("1. Write a new entry\n2. Display the journal\n3. Save the journal to a file\n4. Load the journal from a file\n5. Exit");
+            Console.WriteLine("1. Write a new entry\n2. Display the journal\n3. Save the journal to a file\n4. Load the journal from a file\n5. Save the journal to a JSON file\n6. Load the journal from a JSON file\n7. Exit");
             var option = Console.ReadLine();
             switch (option)
             {
@@ -91,16 +101,8 @@ public class Program
                     journal.SaveToFile(saveFilename);
                     break;
                 case "4":
-                    Console.WriteLine("Enter a filename:");
-                    var loadFilename = Console.ReadLine();
-                    journal.LoadFromFile(loadFilename);
-                    break;
-                case "5":
-                    return;
-                default:
-                    Console.WriteLine("Invalid option");
-                    break;
-            }
-        }
-    }
-}
+                    Console.WriteLine("EnterSure, here's an updated version of the program that:
+
+"1. Saves the journal entries as a CSV file."
+"2. Saves additional information in the journal entry, such as the user's mood."
+"3. Uses JSON for storage."
