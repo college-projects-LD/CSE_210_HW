@@ -1,9 +1,29 @@
 // File: Scripture.cs
+// File: Scripture.cs
 using System;
 using System.Collections.Generic;
 
 namespace ScriptureMemorizer
 {
+    public class Reference
+    {
+        public string Book { get; set; }
+        public string Chapter { get; set; }
+        public string Verse { get; set; }
+
+        public Reference(string book, string chapter, string verse)
+        {
+            this.Book = book;
+            this.Chapter = chapter;
+            this.Verse = verse;
+        }
+
+        public override string ToString()
+        {
+            return $"{Book} {Chapter}:{Verse}";
+        }
+    }
+
     class Scripture
     {
         private string text;
