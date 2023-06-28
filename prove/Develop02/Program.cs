@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 public class Entry
 {
@@ -15,6 +15,7 @@ public class Entry
 public class Journal
 {
     public List<Entry> Entries { get; set; } = new List<Entry>();
+
     private List<string> Prompts { get; set; } = new List<string>
     {
         "Who was the most interesting person I interacted with today?",
@@ -67,14 +68,14 @@ public class Journal
 
     public void SaveToJson(string filename)
     {
-        var json = JsonConvert.SerializeObject(Entries);
+        var json = JsonSerializer.Serialize(Entries);
         File.WriteAllText(filename, json);
     }
 
     public void LoadFromJson(string filename)
     {
         var json = File.ReadAllText(filename);
-        Entries = JsonConvert.DeserializeObject<List<Entry>>(json);
+        Entries = JsonSerializer.Deserialize<List<Entry>>(json);
     }
 }
 
@@ -101,8 +102,29 @@ public class Program
                     journal.SaveToFile(saveFilename);
                     break;
                 case "4":
-                    Console.WriteLine("EnterSure, here's an updated version of the program that:
+                    Console.WriteLine("Enter a filename:");
+                    var loadFilename = Console.ReadLine();
+                    journal.LoadFromFile(loadFilename);
+                    break;
+                case "5":
+                    Console.WriteLine("Enter a filename:");
+                    var jsonSaveFilename = Console.ReadLine();
+                    journal.SaveToJson(jsonSaveFilename);
+                    break;
+                case "6":
+                    Console.WriteLine("Enter a filename:");
+                    var jsonLoadFilename = Console.ReadLine();
+                    journal.LoadFromJson(jsonLoadFilename);
+                    break;
+                case "7":
+                    return;
+            }
+        }
+    }
+}
 
-"1. Saves the journal entries as a CSV file."
-"2. Saves additional information in the journal entry, such as the user's mood."
-"3. Uses JSON for storage."
+
+
+/*1. Saves the journal entries as a CSV file.
+2. Saves additional information in the journal entry, such as the user's mood.
+3. Uses JSON for storage.*/
